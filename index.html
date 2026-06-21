@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>簡易・四柱推命＋九星気学 十二支占い</title>
+<style>
+  body {
+    text-align: center;
+    font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
+    background: #fdfbf7;
+    padding: 20px;
+    margin: 0;
+    color: #333;
+  }
+  .container {
+    max-width: 480px;
+    margin: 0 auto;
+    background: #ffffff;
+    padding: 30px 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+  }
+  h2 {
+    color: #8c6239;
+    font-size: 1.35em;
+    margin-top: 0;
+    margin-bottom: 15px;
+    border-bottom: 2px solid #f3ebd9;
+    padding-bottom: 10px;
+  }
+  p { font-size: 0.95em; color: #666; line-height: 1.6; }
+
+  /* 今日の日付・九星 表示 */
+  #today-info {
+    background: #f9f5eb;
+    border-radius: 8px;
+    padding: 12px 15px;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+  #today-date {
+    font-size: 1.05em;
+    color: #8c6239;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+  #today-kyusei {
+    font-size: 0.95em;
+    color: #555;
+  }
+  .kyusei-label {
+    font-size: 0.85em;
+    color: #8c6239;
+    background: #f3ebd9;
+    padding: 2px 8px;
+    border-radius: 10px;
+    margin-right: 6px;
+  }
+  #kyusei-name {
+    font-weight: bold;
+    color: #8c6239;
+  }
+
+  select {
+    width: 85%;
+    padding: 11px;
+    font-size: 1.05em;
+    border: 2px solid #dcd1be;
+    border-radius: 6px;
+    background-color: #fff;
+    color: #444;
+    cursor: pointer;
+    margin-bottom: 18px;
+    outline: none;
+  }
+  select:focus { border-color: #8c6239; }
+
+  button {
+    padding: 13px 45px;
+    font-size: 1.1em;
+    font-weight: bold;
+    background: #8c6239;
+    color: white;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: background 0.3s;
+    box-shadow: 0 3px 6px rgba(140,98,57,0.2);
+  }
+  button:hover { background: #6f4e2c; }
+
+  #result-box {
+    margin-top: 22px;
+    padding: 20px;
+    background: #fdfaf2;
+    border-left: 4px solid #8c6239;
+    border-radius: 0 8px 8px 0;
+    display: none;
+    text-align: left;
+    opacity: 0;
+    transform: translateY(15px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+  }
+  #result-title {
+    font-size: 1.15em;
+    font-weight: bold;
+    color: #8c6239;
+    margin-bottom: 10px;
+  }
+  #result-text {
+    font-size: 0.95em;
+    line-height: 1.65;
+    color: #555;
+    margin-bottom: 14px;
+  }
+  .kyusei-combined {
+    background: #f3ebd9;
+    padding: 10px 14px;
+    border-radius: 6px;
+    font-size: 0.9em;
+    color: #5c4630;
+    line-height: 1.55;
+  }
+  .kyusei-combined strong {
+    color: #8c6239;
+  }
+
+  /* コピーボタン */
+  #copy-button {
+    margin-top: 16px;
+    padding: 9px 20px;
+    font-size: 0.92em;
+    background: #f3ebd9;
+    color: #8c6239;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  #copy-button:hover {
+    background: #e8d9c0;
+  }
+  #copy-button:active {
+    transform: scale(0.98);
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <h2>十二支＋九星で占う今日の運勢</h2>
+  <p>あなたの生まれ年の干支を選んで、<br>九星気学を組み合わせた本日の運勢を占ってみましょう。</p>
+
+  <!-- 今日の日付と九星 -->
+  <div id="today-info">
+    <div id="today-date"></div>
+    <div id="today-kyusei">
+      <span class="kyusei-label">今日の九星</span>
+      <span id="kyusei-name">七赤金星</span>
+    </div>
+  </div>
+
+  <select id="zodiac-select">
+    <option value="">-- 干支を選択してください --</option>
+    <option value="ne">子（ねずみ）</option>
+    <option value="ushi">丑（うし）</option>
+    <option value="tora">寅（とら）</option>
+    <option value="u">卯（うさぎ）</option>
+    <option value="tatsu">辰（たつ）</option>
+    <option value="mi">巳（へび）</option>
+    <option value="uma">午（うま）</option>
+    <option value="hitsuji">未（ひつじ）</option>
+    <option value="saru">申（さる）</option>
+    <option value="tori">酉（とり）</option>
+    <option value="inu">戌（いぬ）</option>
+    <option value="i">亥（いのしし）</option>
+  </select>
+  <br>
+  <button id="tell-button">運勢を占う</button>
+
+  <div id="result-box">
+    <div id="result-title"></div>
+    <div id="result-text"></div>
+    <div id="kyusei-combined" class="kyusei-combined"></div>
+
+    <!-- コピーボタン -->
+    <button id="copy-button">📋 結果をコピーする</button>
+  </div>
+</div>
+
+<script>
+  // 今日の日付を表示
+  function setTodayInfo() {
+    const dateEl = document.getElementById("today-date");
+    const now = new Date();
+    const formatted = now.toLocaleDateString('ja-JP', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      weekday: 'short'
+    });
+    dateEl.textContent = formatted;
+  }
+
+  // 各干支の運勢データ
+  const fortuneData = {
+    ne: {
+      title: "子年（ね）の運勢",
+      text: "周囲との調和が鍵となる日。調和のエネルギーを取り入れることで、仕事や人間関係がスムーズに進みます。穏やかで協力的な姿勢が、良い結果を引き寄せます。",
+      kyusei: "七赤金星の日は会話や情報が活発に動きます。子年のあなたは柔軟な対応と聞き上手さが特に吉。積極的に人とのつながりを活かしましょう。"
+    },
+    ushi: {
+      title: "丑年（うし）の運勢",
+      text: "じっくりと足元を固めるのに最適な日。粘り強さが実を結びます。今日始める一歩が、未来の大きな実りへと繋がっていくでしょう。",
+      kyusei: "七赤金星の活発なエネルギーが、丑年の粘り強さと良いバランスに。計画的に動けば、思わぬ人脈や情報が味方につきます。"
+    },
+    tora: {
+      title: "寅年（とら）の運勢",
+      text: "決断力と行動力が高まっています。新しい挑戦に最適なタイミング。直感を信じて一歩踏み出してみると、良い流れを引き寄せられます。",
+      kyusei: "七赤金星の日は行動と発信が強みになります。寅年のあなたは大胆に動くことでチャンスを掴みやすい日です。勢いよく進みましょう。"
+    },
+    u: {
+      title: "卯年（う）の運勢",
+      text: "穏やかで平穏な一日を過ごせそう。直感が冴えるので、ひらめいたアイデアはメモに残しておきましょう。創作活動にも向いている日です。",
+      kyusei: "七赤金星の日は人とのやり取りが増えやすいですが、卯年のあなたは静かに内省する時間も大切に。バランスを取ると良い結果に。"
+    },
+    tatsu: {
+      title: "辰年（たつ）の運勢",
+      text: "エネルギーに満ちあふれ、周囲を引っ張っていくパワーがあります。ただし、強引になりすぎず全体のバランスを意識するとさらに吉。",
+      kyusei: "七赤金星の日はリーダーシップが光ります。辰年のあなたは周囲を巻き込む力が強まるので、協調性を意識するとより大きな成果が出せます。"
+    },
+    mi: {
+      title: "巳年（み）の運勢",
+      text: "深い洞察力が冴え渡る日。問題の核心を見抜くことができるため、未解決のタスクを片付けるチャンスです。秘密の計画を練るのにも最適。",
+      kyusei: "七赤金星の日は情報と洞察の相性が抜群。巳年のあなたは特に勘が冴えるので、重要な判断や交渉に向いています。"
+    },
+    uma: {
+      title: "午年（うま）の運勢",
+      text: "アクティブに動くことで運気が開けます。スピード感を大切にすると良い結果が得られそう。フットワーク軽く行動してみましょう。",
+      kyusei: "七赤金星の活発な日は午年のあなたにぴったり。動き回ることで良い出会いやチャンスが舞い込みやすい日です。"
+    },
+    hitsuji: {
+      title: "未年（ひつじ）の運勢",
+      text: "対人運が好調です。周囲への気配りや優しさが、巡り巡ってあなたに大きな幸運として返ってきます。お茶の時間を大切に。",
+      kyusei: "七赤金星の日は人とのつながりが鍵。未年のあなたは優しさがさらに活きるので、丁寧な対応が幸運を呼び込みます。"
+    },
+    saru: {
+      title: "申年（さる）の運勢",
+      text: "知性と機転が活きる一日。臨機応変な対応が評価されます。新しいガジェットやITツール、AIの活用法を調べると素晴らしいヒントが得られます。",
+      kyusei: "七赤金星の日は知性とコミュニケーションが特に強い日。申年のあなたはアイデアを積極的に発信すると良い反応が得られます。"
+    },
+    tori: {
+      title: "酉年（とり）の運勢",
+      text: "細かなところにまで目が届く日。計画の見直しや整理整頓を行うと、これからの流れがよりクリアになります。自分へのご褒美も忘れずに。",
+      kyusei: "七赤金星の日は細部への注意力と話術が活きます。酉年のあなたは整理と計画の見直しが特に効果的な日です。"
+    },
+    inu: {
+      title: "戌年（いぬ）の運勢",
+      text: "誠実な対応が信頼を集める日。約束を守り、愚直に進むことで周囲からのサポートを受けやすくなります。身近な人を大切にすると吉。",
+      kyusei: "七赤金星の日は人との約束や誠実さが光る日。戌年のあなたは真摯な姿勢がさらに信頼を高め、良いご縁を呼び込みます。"
+    },
+    i: {
+      title: "亥年（い）の運勢",
+      text: "目標に向かって一直線に進める日。強い意志を持って進めば、多少の困難は乗り越えられます。自分のペースを崩さずに進みましょう。",
+      kyusei: "七赤金星の日は目標に向かうエネルギーが強まります。亥年のあなたは一歩踏み出す勇気が特に報われやすい日です。"
+    }
+  };
+
+  function fortuneTell() {
+    const selectElement = document.getElementById("zodiac-select");
+    const selectedValue = selectElement.value;
+
+    if (!selectedValue) {
+      alert("あなたの干支を選択してください。");
+      return;
+    }
+
+    const resultBox = document.getElementById("result-box");
+    const resultTitle = document.getElementById("result-title");
+    const resultText = document.getElementById("result-text");
+    const kyuseiCombined = document.getElementById("kyusei-combined");
+
+    const fortune = fortuneData[selectedValue];
+    if (!fortune) {
+      alert("エラーが発生しました。もう一度お試しください。");
+      return;
+    }
+
+    resultTitle.innerText = fortune.title;
+    resultText.innerText = fortune.text;
+    kyuseiCombined.innerHTML = `<strong>九星気学との組み合わせ：</strong><br>${fortune.kyusei}`;
+
+    // アニメーション付きで表示
+    resultBox.style.transition = "none";
+    resultBox.style.opacity = "0";
+    resultBox.style.transform = "translateY(15px)";
+    resultBox.style.display = "block";
+    void resultBox.offsetWidth;
+
+    resultBox.style.transition = "opacity 0.5s ease, transform 0.5s ease";
+    resultBox.style.opacity = "1";
+    resultBox.style.transform = "translateY(0)";
+  }
+
+  // 結果をクリップボードにコピーする機能
+  function copyResult() {
+    const resultTitle = document.getElementById("result-title").innerText;
+    const resultText = document.getElementById("result-text").innerText;
+    const kyuseiText = document.getElementById("kyusei-combined").innerText;
+    const todayDate = document.getElementById("today-date").innerText;
+
+    const copyText = 
+`【${todayDate}】
+今日の九星：七赤金星
+
+${resultTitle}
+${resultText}
+
+${kyuseiText}
+
+---
+簡易・四柱推命＋九星気学 十二支占い`;
+
+    navigator.clipboard.writeText(copyText).then(() => {
+      const btn = document.getElementById("copy-button");
+      const originalText = btn.innerHTML;
+
+      btn.innerHTML = "✅ コピーしました！";
+      btn.style.background = "#d4edda";
+      btn.style.color = "#155724";
+
+      setTimeout(() => {
+        btn.innerHTML = originalText;
+        btn.style.background = "#f3ebd9";
+        btn.style.color = "#8c6239";
+      }, 1800);
+    }).catch(() => {
+      // フォールバック（古いブラウザ対応）
+      alert("コピーに失敗しました。手動で選択してコピーしてください。");
+    });
+  }
+
+  // 初期化
+  document.addEventListener("DOMContentLoaded", () => {
+    setTodayInfo();
+
+    const tellButton = document.getElementById("tell-button");
+    if (tellButton) {
+      tellButton.addEventListener("click", fortuneTell);
+    }
+
+    const copyButton = document.getElementById("copy-button");
+    if (copyButton) {
+      copyButton.addEventListener("click", copyResult);
+    }
+  });
+</script>
+</body>
+</html>
